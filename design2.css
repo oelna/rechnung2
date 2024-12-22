@@ -1,0 +1,159 @@
+
+* {
+	box-sizing: border-box;
+	margin: 0;
+	padding: 0;
+}
+
+ul, ol { list-style: none; }
+
+@keyframes move-out {
+    from {
+        /* transform: translateY(0%); */
+        opacity: 1;
+    }
+
+    to {
+        /* transform: translateY(-100%); */
+        opacity: 0;
+    }
+}
+
+@keyframes move-in {
+    from {
+    	opacity: 0;
+        /* transform: translateY(100%); */
+    }
+
+    to {
+    	opacity: 1;
+        /* transform: translateY(0%); */
+    }
+}
+
+@view-transition {
+	navigation: auto;
+}
+
+::view-transition-group(my-page) {
+	animation-duration: 0.5s;
+}
+
+html {
+	font: 100%/1.35 system-ui;
+
+	/* text-wrap: balance;
+	hyphens: auto; */
+	--page-padding: 10mm;
+}
+
+.doc .page {
+	width: 210mm;
+	height: 297mm;
+	display: flex; /* for margin collapse */
+	justify-content: stretch;
+}
+
+.doc .page .page-content {
+	margin: var(--page-padding);
+	width: 100%;
+}
+
+@media screen {
+	html {
+		background: #9c9999;
+	}
+
+	.editor .ui {
+		display: block;
+		
+	}
+
+	.editor .ui .panel {
+		position: absolute;
+		z-index: 1000;
+		top: 2rem;
+		right: 4rem;
+		width: 250px;
+		background: #333;
+		padding: 2px;
+		border: 1px solid #000;
+		box-shadow: 0 10px 15px #0005;
+	}
+
+	.editor .ui .panel .handle {
+		min-height: 0.75em;
+	}
+
+	.editor .panel .tabs {
+		display: grid;
+		grid-gap: 0 0.2em;
+		grid-auto-columns: 1fr;
+	}
+
+	.editor .ui .panel details {
+		display: contents;
+	}
+
+	.editor .ui .panel details summary {
+		grid-row-start: 1;
+		font-size: 0.9rem;
+		background: gray;
+		padding: 0.2em 0.5em 0.4em;
+		cursor: pointer;
+	}
+
+	.editor .ui .panel details summary::marker {
+		content: "";
+	}
+
+	.editor .ui .panel details summary::-webkit-details-marker {
+		display: none;
+	}
+
+	.editor .ui .panel details[open] > * {
+		background: #ccc;
+	}
+
+	.tab-content {
+		padding: 0.5em;
+		grid-row-start: 2;
+		grid-column: 1 / 4;
+	}
+
+	.doc {
+		margin-block: 2rem 5rem;
+	}
+
+	.doc .page {
+		view-transition-name: my-page;
+		margin-inline: auto;
+		background: #fff;
+		box-shadow: 0 5px 15px #0005;
+		border: 1px solid #888;
+	}
+
+	.doc .page + .page {
+		margin-block-start: 2rem;
+	}
+
+	.doc .page .page-content {
+		outline: 1px solid magenta;
+	}
+}
+
+@media print {
+	@page {
+		size: 210mm 297mm;
+		page-orientation: upright;
+		margin: var(--page-padding);
+	}
+
+	.doc .page {
+		/* background: red; */
+	}
+
+	.editor .ui {
+		display: none;
+	}
+}

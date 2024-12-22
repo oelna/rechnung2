@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en" class="home">
+<head>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<title>Pages</title>
+
+	<link rel="stylesheet" href="design2.css" />
+
+	<!--<script src="https://unpkg.com/@neodrag/vanilla@latest/dist/umd/index.js"></script>-->
+</head>
+<body>
+
+	<div class="editor">
+		<div class="ui">
+			<!--<panel :todo="item"></panel>-->
+			<div class="panel" v-draggable>
+				<nav class="handle">
+					<h2>{{ title }}</h2>
+				</nav>
+				<div class="tabs">
+					<details name="panel-1" :open="tab.open" v-for="tab in tabs">
+						<summary>{{ tab.title }}</summary>
+						<div class="tab-content">{{ tab.content }}</div>
+					</details>
+				</div>
+			</div>
+			<!--
+			<div class="panel">
+				<nav class="handle">
+					<h2>Panel title</h2>
+				</nav>
+				<div class="tabs">
+					<details name="panel-2" open>
+						<summary>Type</summary>
+						<div class="tab-content">ABC</div>
+					</details>
+					<details name="panel-2">
+						<summary>Transform</summary>
+						<div class="tab-content">123</div>
+					</details>
+				</div>
+			</div>
+			-->
+		</div>
+
+		<ol class="doc">
+			<li class="page">
+				<div class="page-content">
+					<!--<div id="abc">{{ message }}</div>-->
+					<p lang="en">Any browser that supports HEVC video will play the spatial video file as 2D video on the webpage. In visionOS, Safari 18.2 provides UI alongside the rest of the video controls to allow users to tap to view the video spatially. On first tap, the video appears in a floating frame as the Safari window disappears. Then when the user taps again, the video further expands to create a more immersive experience. When they exit the video, the Safari window returns.
+
+					Safari 18.2 in visionOS 2.2 also adds additional support for viewing spatial photos.
+
+					Anytime you embed a spatial photo in a web page, it appears inline in 2D, just like any other photo. Starting with Safari 18.0 for visionOS, as a web developer, you could use the JavaScript Fullscreen API to provide a mechanism for spatial photos to escape the webpage and be immersive.
+
+					Now, in Safari 18.2, users can view any spatial photo by pinching and holding it, and then selecting “View Spatial Photo”.</p>
+				</div>
+				
+			</li>
+			<li class="page">
+				<div class="page-content">
+					<p lang="en">Any browser that supports HEVC video will play the spatial video file as 2D video on the webpage. In visionOS, Safari 18.2 provides UI alongside the rest of the video controls to allow users to tap to view the video spatially. On first tap, the video appears in a float</p>
+				</div>
+			</li>
+			<li class="page">
+				<div class="page-content"></div>
+			</li>
+		</ol>
+	</div>
+
+	<script type="module">
+		import { createApp, ref } from 'https://unpkg.com/vue@3/dist/vue.esm-browser.js';
+		import { vDraggable } from 'https://cdn.jsdelivr.net/npm/@neodrag/vue@2.2.0/+esm';
+
+		
+		import { panel } from './pages-components.js'
+// console.log(panel);
+		const panels = [];
+		//const Draggable = new vDraggable();
+		// console.log(vDraggable);
+
+		/*
+		document.querySelectorAll('.panel').forEach(function (ele, i) {
+			const drag = Draggable.Draggable(ele, {
+				// grid: [50, 50],
+				// gpuAcceleration: true,
+				handle: '.handle',
+				distance: 3,
+				delay: 0
+			});
+			panels.push(drag);
+		});
+		*/
+
+		createApp({
+			directives: {
+				draggable: vDraggable
+			},
+			components: {
+				panel
+			},
+			data() {
+				return {
+					tabs: [
+						{ title: 'x', content: '1', open: true },
+						{ title: 'y', content: '2', open: false },
+					],
+					title: 'DEFDEF'
+				}
+			},
+			methods: {
+				toggleRed() {
+					this.isRed = !this.isRed
+				},
+				toggleColor() {
+					this.color = this.color === 'green' ? 'blue' : 'green'
+				}
+			},
+			setup() {
+				/*
+				const message = ref('Hello Vue!')
+				return {
+					message
+				}
+				*/
+			}
+		}).mount('.editor');
+	</script>
+
+</body>
+</html>
