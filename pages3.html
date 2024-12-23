@@ -16,9 +16,9 @@
 			<!--<panel :todo="item"></panel>-->
 			<div>
 				<p>{{ count }}</p>
-				<p>{{ plusOne }}</p>
-				<button @click="increment">increment</button>
-				<button @click="del">del</button>
+				<p>Pages: {{ pages.length }}</p>
+				<button @click="increment">add page</button>
+				<button @click="del">delete</button>
 			</div>
 
 			<!--<div class="panel" v-draggable>
@@ -60,94 +60,18 @@
 		<ol class="doc">
 			<li class="page" v-for="(page, index) in pages" :key="index" @vue:mounted="mounted" @vue:unmounted="console.log('unmounted: ', $el)">
 				<div class="page-content">
-					<p lang="en">Any browser that supports HEVC video will play the spatial video file as 2D video on the webpage. In visionOS, Safari 18.2 provides UI alongside the rest of the video controls to allow users to tap to view the video spatially. On first tap, the video appears in a float</p>
+					<p lang="en" v-for="(ele, index) in page.elements" @vue:mounted="page.mounted">Any browser that {{ index }} supports HEVC video will play the spatial video file as 2D video on the webpage. In visionOS, Safari 18.2 provides UI alongside the rest of the video controls to allow users to tap to view the video spatially. On first tap, the video appears in a float</p>
 				</div>
 				<div class="page-ui">
 					{{ page.id }} / {{ page.order }}
 					<button @click="del(index)">Delete Page</button>
+					<button @click="addElement(page)">Add Text Frame</button>
 				</div>
 			</li>
 		</ol>
 	</div>
 
-	<script type="module">
-		import { createApp, reactive } from 'https://unpkg.com/petite-vue?module'
-		import { vDraggable } from 'https://cdn.jsdelivr.net/npm/@neodrag/vue@2.2.0/+esm';
-
-		const panels = [];
-
-		const tabs = [
-			{ title: 'x', content: '1', open: true },
-			{ title: 'y', content: '2', open: false },
-		];
-
-		const store = reactive({
-			count: 0,
-			ui: [],
-			documents: [],
-			currentDocument: null,
-			inc() {
-				this.count++
-			}
-		});
-
-		// manipulate it here
-		store.inc();
-
-		// page component
-		function Page (props) {
-			return {
-				id: null,
-				order: null,
-				count: props.initialCount,
-				delete() {
-					console.log('PageObject delete method');
-				},
-				mounted() {
-					console.log('Page mounted!', props);
-				}
-			}
-		}
-
-		const x = createApp({
-			Page
-		});
-		x.id = 1;
-		x.order = 1;
-
-		createApp({
-			// exposed to all expressions
-			pages: [x],
-			count: 2,
-			// getters
-			get plusOne() {
-				return store.count;
-			},
-			mounted() {
-				console.log('Editor mounted!');
-			},
-			// methods
-			increment() {
-				// store.count += 1;
-				// store.inc();
-				// this.count += 1;
-
-				const newPage = createApp({
-					Page
-				});
-				newPage.id = this.count++;
-				this.pages.push(newPage);
-				console.log(this.pages);
-			},
-			del(index) {
-				console.log('deleted page', index+1);
-				console.log('page id', this.pages[index].id);
-				this.pages.splice(index, 1);
-				//const target_copy = Object.assign({}, props);
-				//console.log('delete 2', target_copy.id);
-			}
-		}).mount('.editor');
-	</script>
+	<script type="module" src="./pages-main.js"></script>
 
 </body>
 </html>
