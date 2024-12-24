@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en" class="home">
+<head>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<title>Pages</title>
+
+	<link rel="stylesheet" href="design2.css" />
+
+	<!--<script src="https://unpkg.com/@neodrag/vanilla@latest/dist/umd/index.js"></script>-->
+</head>
+<body>
+
+	<div class="editor" v-scope @vue:mounted="mounted">
+		<div class="ui">
+			<!--<panel :todo="item"></panel>-->
+			<div>
+				<p>{{ count }}</p>
+				<p>Pages: {{ pages.length }}</p>
+				<button @click="increment">add page</button>
+				<button @click="del">delete</button>
+			</div>
+
+			<!--<div class="panel" v-draggable>
+				<nav class="handle">
+					<h2>{{ title }}</h2>
+				</nav>
+				<div class="tabs">
+					<details name="panel-1" :open="tab.open" v-for="tab in tabs">
+						<summary>{{ tab.title }}</summary>
+						<div class="tab-content">{{ tab.content }}</div>
+					</details>
+				</div>
+			</div>
+			-->
+			<!--
+			<div class="panel">
+				<nav class="handle">
+					<h2>Panel title</h2>
+				</nav>
+				<div class="tabs">
+					<details name="panel-2" open>
+						<summary>Type</summary>
+						<div class="tab-content">ABC</div>
+					</details>
+					<details name="panel-2">
+						<summary>Transform</summary>
+						<div class="tab-content">123</div>
+					</details>
+				</div>
+			</div>
+			-->
+		</div>
+
+<!--<div v-scope="Page({ initialCount: 1 })" @vue:mounted="mounted">
+  <p>{{ count }}</p>
+  <button @click="inc">ababababa</button>
+</div>-->
+
+		<ol class="doc">
+			<li class="page" v-for="(page, index) in pages" :key="index" @vue:mounted="mounted" @vue:unmounted="console.log('unmounted: ', $el)">
+				<div class="page-content">
+					<p lang="en" v-for="(ele, index) in page.elements" @vue:mounted="page.mounted">Any browser that {{ index }} supports HEVC video will play the spatial video file as 2D video on the webpage. In visionOS, Safari 18.2 provides UI alongside the rest of the video controls to allow users to tap to view the video spatially. On first tap, the video appears in a float</p>
+				</div>
+				<div class="page-ui">
+					{{ page.id }} / {{ page.order }}
+					<button @click="del(index)">Delete Page</button>
+					<button @click="addElement(page)">Add Text Frame</button>
+				</div>
+			</li>
+		</ol>
+	</div>
+
+	<script type="module" src="./pages-main.js"></script>
+
+</body>
+</html>

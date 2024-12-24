@@ -140,6 +140,10 @@ html {
 	.doc .page .page-content {
 		outline: 1px solid magenta;
 	}
+
+	.doc .page .page-content > * {
+		outline: 1px solid #007aff;
+	}
 }
 
 @media print {
