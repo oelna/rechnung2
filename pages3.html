@@ -6,30 +6,91 @@
 	<title>Pages</title>
 
 	<link rel="stylesheet" href="design2.css" />
+	<script type="importmap">{
+		"imports": {
+			"alpine2": "https://cdn.jsdelivr.net/npm/alpinejs@3.14.7/+esm",
+			"alpine": "https://cdn.skypack.dev/alpinejs",
+			"alpinesort": "https://cdn.jsdelivr.net/npm/@alpinejs/sort@3.14.8/+esm",
+			"neodrag": "https://cdn.jsdelivr.net/npm/@neodrag/vanilla@2.2.0/+esm"
+		}
+	}</script>
 </head>
 <body>
 
-	<div class="editor" x-data="editor">
-		<div class="ui">
+	<div class="editor" x-data="editor" x-ref="editor">
+		<div class="ui" x-ref="ui">
 			<!--<panel :todo="item"></panel>-->
-			<div>
-				<p>{{ count }}</p>
-				<p>Pages: {{ pages.length }}</p>
-				<button @click="addPage($id('page'))">add page</button>
-				<button >delete</button>
-			</div>
+
+			<nav class="menubar" x-data x-ref="menubar">
+				<div class="segment" inert>
+					<span x-text="'Pages: ' + pageCount"></span>
+				</div>
+			</nav>
+
+			<aside class="toolbar">
+				<div class="handle"></div>
+
+				<div class="panel2" x-data="{ currentTab: 1 }">
+					<nav class="tabs">
+						<button @click="currentTab = (currentTab == 1) ? 0 : 1" :class="{ 'active': currentTab === 1 }">Pages</button>
+						<button @click="currentTab = (currentTab == 2) ? 0 : 2" :class="{ 'active': currentTab === 2 }">Info</button>
+						<button @click="currentTab = (currentTab == 3) ? 0 : 3" :class="{ 'active': currentTab === 3 }">Transform</button>
+					</nav>
+					<div class="tab-content">
+						<div x-show="currentTab === 1" class="tab" :class="{ 'active': currentTab === 1 }">
+							<!-- pages panel -->
+
+							<div class="pages-navigator" x-data="pagesNavigator" x-sort.ghost="sortEnd($item, $position, $dispatch)">
+								<template x-for="(p, i) in pages" x-if="!p.deleted" :key="p.id">
+									<div class="page-preview" :id="$id('page-preview')" :class="{ 'active': $store.global.currentPage === i+1 }" x-sort:item="i+1" x-text="p.order" @click="$store.global.currentPage = i+1; scrollTo(i+1)" @dblclick="" :data-order="p.order" :data-page="p.id" :title="p.id"></div>
+								</template>
+							</div>
+
+							<p x-text="'Pages: ' + pages.length" inert></p>
+							<p x-text="'Active Page: ' + $store.global.currentPage" inert></p>
+
+							<button @click="addPage($id('page'))">add page</button>
+							<button @click="deletePage($store.global.currentPage)">delete page</button>
+						</div>
+						<div x-show="currentTab === 2" class="tab" :class="{ 'active': currentTab === 2 }">
+							<!-- info panel -->
+							<p x-text="JSON.stringify($store.global.ui.dragInstance._options.position)"></p>
+						</div>
+						<div x-show="currentTab === 3" class="tab" :class="{ 'active': currentTab === 3 }">Transform content</div>
+					</div>
+				</div>
+
+				<div class="panel2" x-data="{ currentTab: 1 }">
+					<nav class="tabs">
+						<button @click="currentTab = (currentTab == 1) ? 0 : 1" :class="{ 'active': currentTab === 1 }">Type</button>
+						<button @click="currentTab = (currentTab == 2) ? 0 : 2" :class="{ 'active': currentTab === 2 }">Align</button>
+					</nav>
+					<div class="tab-content">
+						<div x-show="currentTab === 1" class="tab" :class="{ 'active': currentTab === 1 }">Type content</div>
+						<div x-show="currentTab === 2" class="tab" :class="{ 'active': currentTab === 2 }">Align content</div>
+					</div>
+				</div>
+			</aside>
 		</div>
 
-		<ol class="doc">
-			<template x-for="(p, index) in pages" :key="index">
-				<li class="page" x-data="page" :id="$id('page')">
+		<ol class="doc" x-ref="doc" @sortpage.window="doPageSort($event)">
+			<template x-for="index in pageCount" :key="index">
+				<li class="page" x-data="page({order: index})" :id="$id('page')" @click="activatePage(index)" :style="{order: order}" :data-page="id" :data-order="order" @orderchange="setOrder($event)">
 					<div class="page-content">
-						<template x-for="(e, index) in elements" :key="index">
-							<p lang="en" x-data="element" :id="$id('element')" contenteditable><strong x-text="e.text"></strong> Any browser that {{ index }} supports HEVC video will play the spatial video file as 2D video on the webpage. In visionOS, Safari 18.2 provides UI alongside the rest of the video controls to allow users to tap to view the video spatially. On first tap, the video appears in a float</p>
+						<template x-for="(e, i) in elements" :key="i">
+							<div class="frame" x-data="element" :id="$id('element')">
+								<div class="ui">
+									<span class="handle" @mousedown.self="activate(e)">…</span>
+									X: <span x-text="e.getXmm()"></span>mm,
+									Y: <span x-text="e.getYmm()"></span>mm
+								</div>
+								<div x-text="e.text" contenteditable>Any browser that supports HEVC video will play the spatial video file as 2D video on the webpage. In visionOS, Safari 18.2 provides UI alongside the rest of the video controls to allow users to tap to view the video spatially. On first tap, the video appears in a float</div>
+							</div>
 						</template>
 					</div>
 					<div class="page-ui">
-						<span x-text="p.id"></span> / <span x-text="pages.length"></span>
+						<span x-text="'Page ' + index + ' / #' + id"></span><br />
+						<span x-text="'Order ' + order"></span><br />
 						<button @click="deletePage(p, index, $data)">Delete Page</button>
 						<button @click="addElement($id('element'))">Add Text Frame</button>
 					</div>

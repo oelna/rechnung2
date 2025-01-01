@@ -1,4 +1,10 @@
 
+:root {
+	--page-width: 210mm;
+	--page-height: 297mm;
+	--panel-corners: 0.2rem;
+}
+
 * {
 	box-sizing: border-box;
 	margin: 0;
@@ -47,11 +53,19 @@ html {
 	--page-padding: 10mm;
 }
 
+.doc {
+	display: flex;
+	flex-direction: column;
+	gap: 2rem;
+}
+
 .doc .page {
-	width: 210mm;
-	height: 297mm;
+	width: var(--page-width);
+	height: var(--page-height);
 	display: flex; /* for margin collapse */
 	justify-content: stretch;
+
+	scroll-margin-top: 3rem; /* for scrolling via pages-navigator */
 }
 
 .doc .page .page-content {
@@ -64,13 +78,39 @@ html {
 		background: #9c9999;
 	}
 
+	body {
+		margin-block-start: 3rem;
+	}
+
 	.editor .ui {
 		display: block;
 		
 	}
 
+	.editor .ui .menubar {
+		position: fixed;
+		z-index: 1000;
+		top: 0;
+		left: 0;
+		width: 100%;
+		min-height: 2rem;
+		font-size: 0.9rem;
+		padding: 0.45rem;
+		display: flex;
+		gap: 0.5rem;
+		background: #333;
+		box-shadow: 0 0.2rem 0.2rem #0003;
+	}
+
+	.editor .ui .menubar .segment {
+		padding: 0.1em 0.3em 0.2em;
+		background: #555;
+		color: #bbb;
+		border-radius: var(--panel-corners);
+	}
+
 	.editor .ui .panel {
-		position: absolute;
+		position: fixed;
 		z-index: 1000;
 		top: 2rem;
 		right: 4rem;
@@ -115,10 +155,127 @@ html {
 		background: #ccc;
 	}
 
-	.tab-content {
+	.editor .ui .panel .tab-content {
 		padding: 0.5em;
 		grid-row-start: 2;
 		grid-column: 1 / 4;
+	}
+
+	.editor .ui .toolbar {
+		position: fixed;
+		z-index: 1000;
+		font-size: 0.9rem;
+		top: 2rem;
+		right: 4rem;
+		width: 250px;
+		background: #333;
+		padding: 0.25rem;
+		border: 0px solid #000;
+		border-radius: calc(var(--panel-corners) * 1.5);
+		box-shadow: 0 10px 15px #0005;
+		transition: opacity 0.3s ease;
+	}
+
+	.editor .ui .toolbar.neodrag-dragging {
+		opacity: 0.75;
+	}
+
+	.editor .ui .toolbar .panel2 {}
+
+	.editor .ui .toolbar .panel2 + .panel2 {
+		margin-block-start: 0.25rem;
+		border-block-start: 1px solid #444;
+		padding-block-start: 0.25rem;
+	}
+
+	.editor .ui .toolbar .handle {
+		height: 0.75rem;
+	}
+
+	.editor .ui .toolbar .tabs {
+		display: flex;
+		gap: 0.2rem;
+	}
+
+	.editor .ui .toolbar .tabs > button {
+		appearance: none;
+		font-size: inherit;
+		border: 0;
+		padding: 0.2em 0.5em;
+		border-top-left-radius: var(--panel-corners);
+		border-top-right-radius: var(--panel-corners);
+		background: #666;
+		cursor: pointer;
+	}
+
+	.editor .ui .toolbar .panel2:not(:has(.tab.active)) .tabs > button {
+		border-radius: var(--panel-corners);
+	}
+
+	.editor .ui .toolbar .tabs > button:not(.active):hover {
+		background: #747474;
+	}
+
+	.editor .ui .toolbar .tabs > button.active,
+	.editor .ui .toolbar .tab-content > .active {
+		background: #999;
+	}
+
+	.editor .ui .toolbar .tab-content > div {
+		padding: 0.5rem 0.5rem 0.75rem;
+		min-height: 5rem;
+		border-bottom-left-radius: var(--panel-corners);
+		border-bottom-right-radius: var(--panel-corners);
+	}
+
+	.editor .ui .toolbar .tab-content p {
+		margin-block-end: 0.75rem;
+	}
+
+	.editor .ui .toolbar .tab-content button {
+		appearance: none;
+		font-size: inherit;
+		border: 0;
+		padding: 0.2em 0.5em 0.3em;
+		background: #ddd;
+		cursor: pointer;
+		text-box: trim-start;
+		border-radius: calc(var(--panel-corners) * 0.75);
+		transition: background 0.15s ease;
+	}
+
+	.editor .ui .toolbar .tab-content button:hover {
+		background: #eee;
+	}
+
+	/* UI toolbar PAGES panel */
+	.toolbar .pages-navigator {
+		display: flex;
+		gap: 0.5rem;
+		flex-wrap: wrap;
+		margin-block-end: 0.5rem;
+	}
+
+	.toolbar .pages-navigator > .page-preview {
+		width: calc(var(--page-width) / 35);
+		height: calc(var(--page-height) / 35); /* 35 is magic number that looked good */
+		background: #ccc;
+		border: 1px solid #666;
+		align-content: center;
+		text-align: center;
+		-webkit-user-select: none;
+		user-select: none;
+		cursor: pointer;
+	}
+
+	.toolbar .pages-navigator > .page-preview.active {
+		/* background: color-mix(in srgb, #007aff 50%, #fff); */
+		background: #fff;
+		border-color: #333;
+	}
+
+	.sortable-ghost { /* pagenavigator drag drop */
+		opacity: 0.5 !important;
 	}
 
 	.doc {
@@ -133,16 +290,35 @@ html {
 		border: 1px solid #888;
 	}
 
-	.doc .page + .page {
-		margin-block-start: 2rem;
-	}
-
 	.doc .page .page-content {
 		outline: 1px solid magenta;
 	}
 
 	.doc .page .page-content > * {
 		outline: 1px solid #007aff;
+	}
+
+	.doc .page .frame .ui {
+		display: none;
+		position: absolute;
+		top: -1.8em;
+		width: 100%;
+		-webkit-user-select: none;
+		user-select: none;
+		outline: 0px solid cyan;
+	}
+
+	.doc .page .frame .ui .handle {
+		display: inline-block;
+		background: #007aff;
+		color: #fff;
+		padding: 0.2em;
+		cursor: grab;
+	}
+
+	.doc .page .frame:hover .ui,
+	.doc .page .frame.neodrag-dragging .ui {
+		display: block;
 	}
 }
 
@@ -157,7 +333,8 @@ html {
 		/* background: red; */
 	}
 
-	.editor .ui {
+	.editor .ui,
+	.page .frame .ui {
 		display: none;
 	}
 }
