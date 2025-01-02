@@ -64,6 +64,7 @@ html {
 	height: var(--page-height);
 	display: flex; /* for margin collapse */
 	justify-content: stretch;
+	z-index: 0;
 
 	scroll-margin-top: 3rem; /* for scrolling via pages-navigator */
 }
@@ -178,6 +179,7 @@ html {
 
 	.editor .ui .toolbar.neodrag-dragging {
 		opacity: 0.75;
+		z-index: 900;
 	}
 
 	.editor .ui .toolbar .panel2 {}

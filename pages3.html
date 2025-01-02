@@ -17,13 +17,16 @@
 </head>
 <body>
 
-	<div class="editor" x-data="editor" x-ref="editor">
+	<div class="editor" x-data="editor()" x-ref="editor">
 		<div class="ui" x-ref="ui">
-			<!--<panel :todo="item"></panel>-->
 
 			<nav class="menubar" x-data x-ref="menubar">
 				<div class="segment" inert>
-					<span x-text="'Pages: ' + pageCount"></span>
+					<span x-text="'Pages: ' + pages.length"></span>
+				</div>
+
+				<div class="segment" inert>
+					<span x-text="'Active: ' + activePage.order"></span>
 				</div>
 			</nav>
 
@@ -41,16 +44,16 @@
 							<!-- pages panel -->
 
 							<div class="pages-navigator" x-data="pagesNavigator" x-sort.ghost="sortEnd($item, $position, $dispatch)">
-								<template x-for="(p, i) in pages" x-if="!p.deleted" :key="p.id">
-									<div class="page-preview" :id="$id('page-preview')" :class="{ 'active': $store.global.currentPage === i+1 }" x-sort:item="i+1" x-text="p.order" @click="$store.global.currentPage = i+1; scrollTo(i+1)" @dblclick="" :data-order="p.order" :data-page="p.id" :title="p.id"></div>
+								<template x-for="(p, i) in pages" :key="p.id">
+									<div class="page-preview" :id="$id('page-preview')" :class="{ 'active': p.active }" x-sort:item="i+1" x-text="p.$component.order" @click="activatePage(p.id); scrollTo(i+1)" @dblclick="" :data-order="p.order" :data-page="p.id" :title="p.id"></div>
 								</template>
 							</div>
 
 							<p x-text="'Pages: ' + pages.length" inert></p>
-							<p x-text="'Active Page: ' + $store.global.currentPage" inert></p>
+							<p x-text="'Active Page: ' + activePage.order" inert></p>
 
-							<button @click="addPage($id('page'))">add page</button>
-							<button @click="deletePage($store.global.currentPage)">delete page</button>
+							<button @click="addPage()">add page</button>
+							<button @click="deletePage()">delete page</button>
 						</div>
 						<div x-show="currentTab === 2" class="tab" :class="{ 'active': currentTab === 2 }">
 							<!-- info panel -->
@@ -66,33 +69,41 @@
 						<button @click="currentTab = (currentTab == 2) ? 0 : 2" :class="{ 'active': currentTab === 2 }">Align</button>
 					</nav>
 					<div class="tab-content">
-						<div x-show="currentTab === 1" class="tab" :class="{ 'active': currentTab === 1 }">Type content</div>
+						<div x-show="currentTab === 1" class="tab" :class="{ 'active': currentTab === 1 }">
+							<p><button @click="activePage.addElement($id('element'))">New Text Frame</button></p>
+							<p><button @click="">New Table</button></p>
+						</div>
 						<div x-show="currentTab === 2" class="tab" :class="{ 'active': currentTab === 2 }">Align content</div>
 					</div>
 				</div>
 			</aside>
 		</div>
 
-		<ol class="doc" x-ref="doc" @sortpage.window="doPageSort($event)">
-			<template x-for="index in pageCount" :key="index">
-				<li class="page" x-data="page({order: index})" :id="$id('page')" @click="activatePage(index)" :style="{order: order}" :data-page="id" :data-order="order" @orderchange="setOrder($event)">
+		<ol class="doc" x-ref="doc" @sortpage.window="doPageSort()">
+			<template x-for="(p, index) in pages" :key="p.id">
+				<li class="page" x-data="p" :id="$id('page')" @click="activatePage(p.id)" :style="{order: order}" :data-page="p.id" :data-order="p.order" @orderchange="p.setOrder($event)" @drop="console.log('dropped')" @dragover.prevent="console.log('over');">
 					<div class="page-content">
 						<template x-for="(e, i) in elements" :key="i">
-							<div class="frame" x-data="element" :id="$id('element')">
+							<div class="frame" x-data="e" :id="'e-'+e.id" :data-element="e.id" x-init="$watch('id', value => console.log(value))">
 								<div class="ui">
 									<span class="handle" @mousedown.self="activate(e)">…</span>
-									X: <span x-text="e.getXmm()"></span>mm,
-									Y: <span x-text="e.getYmm()"></span>mm
+									X: <span x-text="e.xmm"></span>mm,
+									Y: <span x-text="e.ymm"></span>mm,
+									Parent: <span x-text="e.parent.order"></span>
 								</div>
 								<div x-text="e.text" contenteditable>Any browser that supports HEVC video will play the spatial video file as 2D video on the webpage. In visionOS, Safari 18.2 provides UI alongside the rest of the video controls to allow users to tap to view the video spatially. On first tap, the video appears in a float</div>
 							</div>
 						</template>
 					</div>
 					<div class="page-ui">
-						<span x-text="'Page ' + index + ' / #' + id"></span><br />
-						<span x-text="'Order ' + order"></span><br />
-						<button @click="deletePage(p, index, $data)">Delete Page</button>
-						<button @click="addElement($id('element'))">Add Text Frame</button>
+						<span x-text="'Index ' + index"></span><br />
+						<span x-text="'ID #' + id"></span><br />
+						<!--<span x-text="'Order ' + order"></span><br />
+						<span x-text="'Active ' + active"></span><br />
+						<button @click="deletePage(order)">Delete Page</button>-->
+						<button @click="addElement()">Add Text Frame</button><br />
+
+						<div class="drag" x-data="dragtest" draggable="true" @dragstart.self="dragStart($event)" @dragend="dragEnd($event)" @drag="dragMove($event)"  :style="{width: '2rem', height: '2rem', background: '#07f', cursor: 'grab'}" :data-x="x" :data-y="y" x-text="x +'/'+ y"></div>
 					</div>
 				</li>
 			</template>
@@ -100,6 +111,5 @@
 	</div>
 
 	<script type="module" src="./pages-main.js"></script>
-
 </body>
 </html>
