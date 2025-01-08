@@ -6,14 +6,24 @@
 	<title>Pages</title>
 
 	<link rel="stylesheet" href="design2.css" />
+	<!--<script type="importmap">{
+		"imports": {
+			"alpine": "./js/alpine.js",
+			"alpinesort": "./js/alpinesort.js",
+			"neodrag": "./js/neodrag.js",
+			"localforage": "./js/localforage.js"
+		}
+	}</script>-->
 	<script type="importmap">{
 		"imports": {
 			"alpine2": "https://cdn.jsdelivr.net/npm/alpinejs@3.14.7/+esm",
 			"alpine": "https://cdn.skypack.dev/alpinejs",
 			"alpinesort": "https://cdn.jsdelivr.net/npm/@alpinejs/sort@3.14.8/+esm",
-			"neodrag": "https://cdn.jsdelivr.net/npm/@neodrag/vanilla@2.2.0/+esm"
+			"neodrag": "https://cdn.jsdelivr.net/npm/@neodrag/vanilla@2.2.0/+esm",
+			"localforage": "https://cdn.jsdelivr.net/npm/localforage-esm@1.10.2/+esm"
 		}
 	}</script>
+	<script type="module" src="./js/app.js"></script>
 </head>
 <body>
 
@@ -70,8 +80,8 @@
 					</nav>
 					<div class="tab-content">
 						<div x-show="currentTab === 1" class="tab" :class="{ 'active': currentTab === 1 }">
-							<p><button @click="activePage.addElement($id('element'))">New Text Frame</button></p>
-							<p><button @click="">New Table</button></p>
+							<p><button @click="activePage.addElement()">New Text Frame</button></p>
+							<p><button  @click="activePage.addTable()">New Table</button></p>
 						</div>
 						<div x-show="currentTab === 2" class="tab" :class="{ 'active': currentTab === 2 }">Align content</div>
 					</div>
@@ -83,17 +93,31 @@
 			<template x-for="(p, index) in pages" :key="p.id">
 				<li class="page" x-data="p" :id="$id('page')" @click="activatePage(p.id)" :style="{order: order}" :data-page="p.id" :data-order="p.order" @orderchange="p.setOrder($event)" @drop="console.log('dropped')" @dragover.prevent="console.log('over');">
 					<div class="page-content">
-						<template x-for="(e, i) in elements" :key="i">
-							<div class="frame" x-data="e" :id="'e-'+e.id" :data-element="e.id" x-init="$watch('id', value => console.log(value))">
+						<template x-for="(e, i) in elements" :key="e.id">
+							<div class="frame" x-data="e" :id="'e-'+e.id" :class="{ 'text': (e.constructor.name == 'Element2'), 'table': (e.constructor.name == 'TableElement') }" :data-element="e.id">
 								<div class="ui">
 									<span class="handle" @mousedown.self="activate(e)">…</span>
 									X: <span x-text="e.xmm"></span>mm,
 									Y: <span x-text="e.ymm"></span>mm,
 									Parent: <span x-text="e.parent.order"></span>
 								</div>
-								<div x-text="e.text" contenteditable>Any browser that supports HEVC video will play the spatial video file as 2D video on the webpage. In visionOS, Safari 18.2 provides UI alongside the rest of the video controls to allow users to tap to view the video spatially. On first tap, the video appears in a float</div>
+								<template x-if="e.constructor.name == 'Element2'">
+									<div x-text="e.text" contenteditable>Any browser that supports HEVC video will play the spatial video file as 2D video on the webpage. In visionOS, Safari 18.2 provides UI alongside the rest of the video controls to allow users to tap to view the video spatially. On first tap, the video appears in a float</div>
+								</template>
+								<template x-if="e.constructor.name == 'TableElement'">
+									<template x-for="(row, i) in e.rows" :key="i">
+										<div class="row">
+											<template x-for="(col, i) in e.columns" :key="i">
+												<div class="cell">
+													<div class="cell-content" x-data="tablecell" contenteditable x-text="computedContent" :data-content="content" :data-computed="computedContent" @click="editCell($event)" @blur="evaluateCell($event)"></div>
+												</div>
+											</template>
+										</div>
+									</template>
+								</template>
 							</div>
 						</template>
+
 					</div>
 					<div class="page-ui">
 						<span x-text="'Index ' + index"></span><br />
@@ -109,7 +133,5 @@
 			</template>
 		</ol>
 	</div>
-
-	<script type="module" src="./pages-main.js"></script>
 </body>
 </html>

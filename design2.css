@@ -322,6 +322,28 @@ html {
 	.doc .page .frame.neodrag-dragging .ui {
 		display: block;
 	}
+
+	.doc .page .frame.table {
+		--cols: 3;
+		--rows: 3; /* defaults */
+
+		display: grid;
+		grid-template-columns: repeat(var(--cols), 1fr);
+		grid-template-rows: repeat(var(--rows), 1fr);
+	}
+
+	.doc .page .frame.table .row {
+		display: contents;
+	}
+
+	.doc .page .frame.table .cell {
+		background: transparent;
+		border: 1px solid black;
+	}
+
+	.doc .page .frame.table .cell .cell-content {
+		padding: 0.2em;
+	}
 }
 
 @media print {

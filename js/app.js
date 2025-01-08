@@ -2,7 +2,8 @@
 //import { vDraggable } from 'https://cdn.jsdelivr.net/npm/@neodrag/vue@2.2.0/+esm';
 
 import { default as Alpine } from 'alpine';
-import sort from 'alpinesort'
+import sort from 'alpinesort';
+import { default as localForage } from 'localforage';
 import { Draggable } from 'neodrag';
 
 window.Alpine = Alpine;
@@ -11,7 +12,7 @@ Alpine.plugin(sort);
 document.addEventListener('alpine:init', init);
 
 function init () {
-	console.log('init');
+	console.log('init', localForage);
 
 	// todo: put this somewhere that makes sense!
 	Alpine.store('global').cssRoot.style.setProperty('--page-width', '210mm');
@@ -249,12 +250,25 @@ class Page2 {
 		const newElement = new Element2({
 			parent: this
 		});
+		// console.log(newElement.constructor.name);
 
 		this.elements.push(newElement);
 
 		console.log('add Element', newElement);
 
 		return newElement.id;
+	}
+
+	addTable () {
+		const newTable = new TableElement({
+			parent: this
+		});
+
+		this.elements.push(newTable);
+
+		console.log('add Table Element', newTable);
+
+		return newTable.id;
 	}
 }
 
@@ -294,6 +308,7 @@ Alpine.data('pagesNavigator', (options) => (new PagesNavigator2(options)));
 class Element2 {
 	$component = null;
 	$el = null;
+	type = 'element';
 	id = null;
 	active = false;
 	parent = null;
@@ -313,10 +328,9 @@ class Element2 {
 		this.parent = options.parent || null;
 		this.id = Alpine.store('global').uniqueString(4);
 		this.text = options?.text || "I'm a new element";
+		this.type = 'textframe';
 
 		console.log('Element mounted!', this, this.id);
-
-		setTimeout(this.afterSetup, 200, this); // wait for alpine to be available
 	}
 
 	init () {
@@ -379,6 +393,111 @@ class Element2 {
 }
 
 Alpine.data('element', (options) => (new Element2(options)));
+
+class TableElement extends Element2 {
+	columns = [1, 1];
+	rows = [1, 1];
+
+	constructor (options) {
+		super(options);
+
+		this.type = 'table';
+
+		console.log('construct table element');
+	}
+
+	init () {
+		super.init();
+
+		this.$el.style.setProperty('--cols', this.columns.length);
+		this.$el.style.setProperty('--rows', this.rows.length);
+
+		console.log('init table element');
+	}
+}
+
+class TableCell {
+	content = '';
+	computedContent = '';
+
+	constructor (options) {
+		console.log('construct table cell');
+	}
+
+	init () {
+
+		console.log('init table cell');
+	}
+
+	editCell (event) {
+		// if (document.activeElement === this.$el) return false;
+		// console.log((document.activeElement === this.$el));
+		event.preventDefault();
+		this.$el.focus();
+		this.$el.innerText = this.content;
+		// this.$el.setSelectionRange(-1, -1);
+	}
+
+	evaluateCell (event) {
+		event.preventDefault();
+		this.content = event.target.innerText.trim();
+
+		if (this.content.startsWith('=')) {
+			this.computedContent = 'formula';
+
+			const formula = this.content.substring(1);
+				// this.computedContent = eval(formula);
+			const regexWrapFunctions = /([A-Z]+\()/g;
+			let newFormula = formula.replaceAll(regexWrapFunctions, 'this.$1');
+
+			const regexQuoteCellNames = /([A-Z][0-9]+)/g;
+			newFormula = newFormula.replaceAll(regexQuoteCellNames, '"$1"');
+
+			console.log(formula, newFormula);
+			this.computedContent = Function(`'use strict'; return ${newFormula}`).bind(this)(); // return ${formula}
+			console.log(this.computedContent);
+return;
+			// calculate related cells
+			try {
+				const formula = this.content.substring(1);
+				// this.computedContent = eval(formula);
+				this.computedContent = Function(`'use strict'; return ${formula}`).bind(this)();
+				console.log(this.computedContent);
+			} catch (error) {
+				console.error('could not eval cell');
+				this.computedContent = 'error in formula';
+			}
+		} else {
+			this.computedContent = ''+this.content+'';
+		}
+
+		this.$el.innerText = this.computedContent;
+		console.log('eval cell', this.content, this.computedContent);
+
+		// todo: reevaluate all other formulas??
+	}
+
+	VAL (cellID) {
+		const row = 1;
+		const column = 1;
+		// const selector = '> div.row:nth-of-type('+row+') > div.cell:nth-of-type('+column+')';
+		// console.log(selector);
+
+		const parentTable = this.$el.closest('.table');
+		console.log(parentTable, this.$el);
+		const rows = parentTable.querySelectorAll('.row');
+		const cells = rows[row-1].querySelectorAll('.cell');
+		const cell = cells[column-1];
+		if (!cell) return false;
+		return cell.querySelector('.cell-content').getAttribute('data-computed');
+	}
+
+	SUM (cellID1, cellID2) {
+		return cellID1 + cellID2;
+	}
+}
+
+Alpine.data('tablecell', (options) => (new TableCell(options)));
 
 class DragTest {
 	x = 0;
